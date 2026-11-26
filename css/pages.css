@@ -1,0 +1,235 @@
+/* 各模块页面自己的版式：驾驶舱的便当格、热力图、九宫格、组织架构、提醒预览等。通用部件在 theme.css。 */
+
+/* ---------- 人才驾驶舱 ---------- */
+.bento{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));grid-auto-flow:dense;gap:16px}
+.bento>.tiles,.ck-top>.tiles{margin:0}
+/* 第一屏：左边上面是今天的概况，下面四个指标；右边一整列是今天要处理的。右边比左边高时，多出来的高度给概况那一块 */
+.ck-top{grid-column:span 8;display:grid;grid-template-rows:minmax(0,1fr) auto;gap:16px;min-width:0}
+.ck-top>.tiles{grid-template-columns:repeat(4,minmax(0,1fr))}
+.hero{isolation:isolate;flex-direction:row;align-items:center;gap:30px;min-height:256px;padding:26px 38px 26px 30px;overflow:hidden;
+  background:radial-gradient(86% 150% at 0% 0%,rgba(72,118,255,.34),transparent 60%),radial-gradient(64% 130% at 100% 100%,rgba(138,99,255,.3),transparent 62%),radial-gradient(40% 90% at 66% 0%,rgba(63,213,255,.1),transparent 70%),var(--card)}
+[data-theme=light] .hero{background:radial-gradient(86% 150% at 0% 0%,rgba(59,107,255,.17),transparent 60%),radial-gradient(64% 130% at 100% 100%,rgba(122,77,255,.15),transparent 62%),radial-gradient(40% 90% at 66% 0%,rgba(20,180,230,.08),transparent 70%),#fff}
+.hero-t{flex:1;min-width:0}
+.hero .eyebrow{display:flex;align-items:center;gap:10px;margin-bottom:14px;font-weight:500}
+.hero-h{width:fit-content;font-size:30px;line-height:1.25;font-weight:700;letter-spacing:.01em;background:linear-gradient(92deg,var(--ink) 30%,var(--brand-ink));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero-s{max-width:460px;margin-top:10px;font-size:14px;line-height:1.75;color:var(--ink-2)}
+.hero-s b{font-weight:600;color:var(--ink)}
+.hero-a{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}
+/* 环后面一圈一圈的细线，像仪表盘的刻度，只是装饰 */
+.hero-g{position:relative;flex:none;display:grid;place-items:center}
+.hero-g::before{content:"";position:absolute;left:50%;top:50%;z-index:-1;width:640px;aspect-ratio:1;translate:-50% -50%;border-radius:50%;background:repeating-radial-gradient(circle,transparent 0 35px,var(--line) 35px 36px);-webkit-mask-image:radial-gradient(closest-side,#000 24%,transparent 92%);mask-image:radial-gradient(closest-side,#000 24%,transparent 92%);opacity:.55;pointer-events:none}
+.hero .gauge{--s:196px}
+.hero .gauge::before{content:"";position:absolute;inset:-16%;border-radius:50%;background:radial-gradient(closest-side,var(--ring),transparent 72%);opacity:.5}
+.hero .gauge-c b{font-size:42px}
+.hero .gauge-c b i{font-size:17px}
+.hero-m{flex:none;display:grid;grid-template-columns:repeat(2,auto);gap:22px 34px}
+.hero-m a{display:block}
+.hero-m b{display:block;font-size:26px;line-height:1.15;font-weight:600;letter-spacing:-.02em}
+.hero-m span{display:flex;align-items:center;gap:6px;margin-top:4px;font-size:12px;color:var(--ink-3);white-space:nowrap;transition:color .15s}
+.hero-m span i{flex:none;width:6px;height:6px;border-radius:50%;background:var(--tb)}
+.hero-m .d-g{background:var(--tg)}.hero-m .d-o{background:var(--to)}.hero-m .d-r{background:var(--tr)}
+.hero-m a:hover span{color:var(--brand-ink)}
+.ck-todo{grid-column:span 4}
+.ck-trend{grid-column:span 8}
+.ck-arrive{grid-column:span 4}
+.ck-dept{grid-column:span 7}
+.ck-dept .dt td{height:56px}
+.ck-ai{grid-column:span 5}
+.ck-lv{grid-column:span 4}
+.ck-grade{grid-column:span 2}
+.ck-perf,.ck-hire{grid-column:span 3}
+.bento>.pending{grid-column:1/-1}
+/* 常见的笔记本宽度：第一屏不变，部门表和提醒各占一整行，下面四张图两两并排 */
+@container main (max-width:1240px){
+  .hero{gap:24px;padding:24px 26px}
+  .hero .gauge{--s:168px}
+  .hero .gauge-c b{font-size:36px}
+  .hero-m{gap:18px 26px}
+  .ck-dept,.ck-ai{grid-column:span 12}
+  .ck-lv,.ck-hire{grid-column:span 6}
+  .ck-grade{grid-column:span 5;order:1}
+  .ck-perf{grid-column:span 7;order:1}
+}
+@container main (max-width:960px){
+  .ck-top,.ck-todo,.ck-trend,.ck-hire{grid-column:span 12}
+  .ck-arrive,.ck-lv,.ck-grade,.ck-perf{grid-column:span 6}
+  .todo-l{grid-template-columns:repeat(2,minmax(0,1fr));column-gap:20px}
+}
+@container main (max-width:720px){
+  .bento{gap:12px}
+  .bento>*{grid-column:span 12!important}
+  .ck-top{gap:12px}
+  .ck-top>.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .hero{flex-direction:column;align-items:stretch;gap:22px;padding:22px 18px}
+  .hero-h{font-size:26px}
+  .hero-g{align-self:center}
+  .hero-m{grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+  .hero-m b{font-size:22px}
+  .todo-l{grid-template-columns:minmax(0,1fr)}
+}
+/* 今天要处理的 */
+.todo-l{display:grid;gap:2px;margin:-2px -8px 0}
+.todo-l a{display:flex;align-items:center;gap:10px;height:42px;padding:0 8px;border-radius:var(--rad-s);font-size:14px;transition:background .15s}
+.todo-l a:hover{background:var(--hover)}
+.todo-l a>i{flex:none;width:7px;height:7px;border-radius:50%;background:var(--tb)}
+.todo-l a>i.d-r{background:var(--tr)}
+.todo-l a>i.d-o{background:var(--to)}
+.todo-l b{margin-left:auto;font-size:16px;font-weight:600}
+.todo-l small{min-width:14px;font-size:12px;color:var(--ink-3)}
+.todo-l .ic{color:var(--ink-4)}
+/* 提醒：一行一个信号 */
+.sig{display:grid;gap:8px}
+.sig a{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px;padding:8px 14px 8px 10px;border:1px solid var(--line);border-radius:12px;background:var(--input);transition:border-color .15s,transform .2s var(--ease)}
+.sig a:hover{border-color:var(--line-2);transform:translateY(-1px)}
+.sig .si{width:34px;height:34px;border-radius:10px;display:grid;place-items:center}
+.sig-t{min-width:0}
+.sig b{display:block;font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* 小字是这条提醒的口径，放不下就折成两行，不截掉 */
+.sig small{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;font-size:12px;line-height:1.45;color:var(--ink-3);overflow:hidden;text-wrap:balance}
+.sig strong{font-size:22px;font-weight:600;letter-spacing:-.02em}
+.sig strong i{margin-left:2px;font-style:normal;font-size:12px;font-weight:400;letter-spacing:0;color:var(--ink-3)}
+@container main (max-width:1240px){.sig{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@container main (max-width:960px){.sig{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@container main (max-width:720px){.sig{grid-template-columns:minmax(0,1fr)}}
+.go{display:inline-flex;align-items:center;gap:2px;font-size:12px;color:var(--ink-3);transition:color .15s}
+.go:hover{color:var(--brand-ink)}
+
+/* ---------- 热力图：一行一个部门，一格一天，颜色越深异常的人越多 ---------- */
+.heat{display:grid;gap:4px;min-width:560px}
+.heat-r{display:grid;grid-template-columns:88px minmax(0,1fr);align-items:center;gap:10px}
+.heat-r>span{font-size:12px;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.heat-c{display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));gap:3px}
+.heat-c i{height:24px;border-radius:5px;background:var(--h0)}
+.heat-c i:hover{outline:2px solid var(--ink-2);outline-offset:1px}
+.heat-c em{font:400 11px/22px var(--mono);font-style:normal;text-align:center;color:var(--ink-3);overflow:visible;white-space:nowrap}
+.h1{background:var(--h1)!important}.h2{background:var(--h2)!important}.h3{background:var(--h3)!important}.h4{background:var(--h4)!important}
+.hx{background:none!important;box-shadow:inset 0 0 0 1px var(--line)}
+.heat-k{display:flex;align-items:center;justify-content:flex-end;gap:4px;margin-top:8px;font-size:12px;color:var(--ink-3)}
+.heat-k i{width:14px;height:14px;border-radius:4px;background:var(--h0)}
+
+/* ---------- 九宫格：行是潜力，列是绩效 ---------- */
+.nine{display:grid;grid-template-columns:22px minmax(0,1fr);gap:8px}
+.nine-y{writing-mode:vertical-rl;text-align:center;font-size:12px;letter-spacing:.2em;color:var(--ink-3)}
+.nine-x{grid-column:2;text-align:center;font-size:12px;letter-spacing:.2em;color:var(--ink-3)}
+.nine-g{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.nine-c{position:relative;min-height:88px;padding:11px 13px;border:1px solid var(--line);border-radius:12px;background:color-mix(in srgb,var(--chart) calc(var(--k,0)*100%),transparent);text-align:left;transition:border-color .15s,transform .2s var(--ease)}
+.nine-c:hover{border-color:var(--line-2);transform:translateY(-1px)}
+.nine-c.on{border-color:var(--brand);box-shadow:0 0 0 1px var(--brand)}
+.nine-c b{display:block;font-size:24px;line-height:1.15;font-weight:600;letter-spacing:-.02em}
+.nine-c span{display:block;margin-top:2px;font-size:13px;font-weight:600}
+.nine-c small{display:block;font-size:12px;color:var(--ink-2)}
+
+/* ---------- 能力雷达图。画布左右留了放文字的地方（见 charts.js），所以文字不会伸到图外面去 ---------- */
+.radar{display:block;width:100%;max-width:300px;margin:0 auto;overflow:visible}
+/* 能力画像：卡片窄（和旁边的表格并排）时只放雷达图；卡片自己占一整行时，雷达图旁边配上每一项的分数 */
+.card-bd:has(>.pf){display:grid}
+.pf{display:grid;align-items:center}
+.pf .radar{max-width:380px}
+.pf .radar text{font-size:10px}
+.pf .radar .lv{font-size:8px}
+.pf .hbars{display:none}
+@container main (max-width:930px){
+  .pf{grid-template-columns:minmax(0,300px) minmax(0,1fr);gap:8px 28px}
+  .pf .radar text{font-size:11px}
+  .pf .radar .lv{font-size:9px}
+  .pf .hbars{display:grid;gap:14px}
+}
+@container main (max-width:560px){.pf{grid-template-columns:minmax(0,1fr)}}
+.radar .web{fill:none;stroke:var(--grid)}
+.radar .axis{stroke:var(--grid)}
+.radar .shape{fill:var(--chart-wash);stroke:var(--chart);stroke-width:2;stroke-linejoin:round;transform-origin:100px 100px}
+.radar circle{fill:var(--chart);stroke:var(--raise);stroke-width:2}
+.radar text{fill:var(--ink-2);font-size:11px}
+.radar .lv{fill:var(--ink-3);font:400 9px var(--mono)}
+@keyframes radar{from{transform:scale(.4);opacity:0}}
+
+/* ---------- 招聘漏斗：一层的上边是这一步的人数，下边收到下一步的人数；越往下颜色越淡 ---------- */
+.funnel{display:grid;gap:3px}
+.funnel>div{display:grid;grid-template-columns:64px minmax(0,1fr) 28px 36px;align-items:center;gap:10px;font-size:13px}
+.funnel span{color:var(--ink-2);white-space:nowrap}
+.funnel i{display:block;height:32px;background:var(--chart);opacity:calc(1 - var(--i,0)*.14)}
+.funnel em{font-style:normal;font-weight:600;text-align:right}
+.funnel small{font-size:12px;color:var(--ink-3);text-align:right}
+.card-bd:has(>.funnel:only-child){display:grid}
+.card-bd>.funnel:only-child{align-content:center}
+
+/* ---------- 组织架构：上面一棵只有名字和人数的小树，下面每个部门一张卡片 ---------- */
+.org-tree{margin-top:16px;padding:22px 18px 20px;border:1px solid var(--line);border-radius:var(--rad);background:var(--sheen),var(--card);box-shadow:var(--shadow);overflow-x:auto}
+.org-root{display:flex;justify-content:center}
+.org-node{position:relative;min-width:132px;padding:10px 18px;border:1px solid var(--line-2);border-radius:12px;background:var(--input);text-align:center;white-space:nowrap}
+.org-node b{display:block;font-size:14px;font-weight:600}
+.org-node span{font-size:12px;color:var(--ink-3)}
+.org-root .org-node{border-color:transparent;background:var(--grad);color:#fff;box-shadow:0 12px 26px -14px rgba(90,139,255,.9)}
+.org-root .org-node span{color:#fff}
+/* 连线：公司往下一小段竖线，接一条横线，每个部门上面再一小段竖线 */
+.org-root .org-node::after{content:"";position:absolute;left:50%;top:100%;height:20px;border-left:1px solid var(--line-2)}
+.org-kids{display:grid;grid-template-columns:repeat(var(--n),minmax(100px,1fr));gap:12px;margin-top:20px;padding-top:20px}
+.org-kids .org-node{min-width:0;padding-inline:8px}
+.org-kids .org-node::before{content:"";position:absolute;left:50%;bottom:100%;height:20px;margin-bottom:1px;border-left:1px solid var(--line-2)}
+.org-kids .org-node::after{content:"";position:absolute;left:-7px;right:-7px;bottom:calc(100% + 21px);border-top:1px solid var(--line-2)}
+.org-kids .org-node:first-child::after{left:50%}
+.org-kids .org-node:last-child::after{right:50%}
+.org-kids .org-node:only-child::after{display:none}
+/* 部门卡片一行最多三张：每张至少占三分之一宽，所以六张排成三三，不会五张一行、剩一张 */
+.org-g{display:grid;grid-template-columns:repeat(auto-fit,minmax(max(300px,calc((100% - 32px)/3)),1fr));gap:16px;margin-top:16px}
+.org-own{display:grid;gap:12px;padding:2px 18px 16px}
+.org-hd{display:flex;align-items:center;gap:12px;padding:16px 18px 12px}
+.org-hd h2{font-size:16px;font-weight:600}
+.org-hd p{font-size:12px;color:var(--ink-3)}
+.org-hd strong{margin-left:auto;font-size:24px;font-weight:600;letter-spacing:-.02em}
+.org-hd strong i{margin-left:2px;font-style:normal;font-size:12px;font-weight:400;letter-spacing:0;color:var(--ink-3)}
+.org-tags{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:0 18px 12px}
+.org-tags .avs{margin-left:auto}
+.org-t{margin:0;padding:0 18px 14px;list-style:none}
+.org-t li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;padding:10px 0;border-top:1px solid var(--line-soft);font-size:13px}
+.org-t li b{font-weight:600}
+.org-t li em{font-style:normal;color:var(--ink-2)}
+.org-t li small{grid-column:1/-1;font-size:12px;color:var(--ink-3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.avs{display:inline-flex;align-items:center;vertical-align:middle}
+.avs .av{width:24px;height:24px;margin-left:-7px;font-size:11px;box-shadow:0 0 0 2px var(--card-solid)}
+.avs .av:first-child{margin-left:0}
+.avs small{margin-left:7px;font-size:12px;color:var(--ink-3)}
+
+/* ---------- 提醒预览：一张卡片一条，正文是将要发出去的文字 ---------- */
+.ntc{display:grid;grid-template-columns:repeat(auto-fill,minmax(380px,1fr));gap:16px;margin-top:16px}
+.ntc .card-hd{flex-wrap:wrap;gap:6px 9px}
+.ntc .card-hd h2{white-space:normal}
+.ntc .card-bd{display:flex;flex-direction:column}
+.ntc dl{display:grid;grid-template-columns:auto minmax(0,1fr);gap:5px 12px;margin:0 0 12px;font-size:13px}
+.ntc dt{color:var(--ink-3)}
+.ntc dd{margin:0;color:var(--ink-2)}
+.msg{padding:11px 13px;border:1px solid var(--line);border-radius:4px 14px 14px 14px;background:var(--input);font-size:13px;line-height:1.7}
+.ntc .ft{display:flex;align-items:flex-end;gap:8px;margin-top:auto;padding-top:12px}
+.ntc .ft .names{flex:1;min-width:0}
+
+/* ---------- 人才观察：一段话一张卡；下面每个提醒一张卡 ---------- */
+.obs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:16px}
+.obs p{font-size:14px;line-height:1.85;color:var(--ink-2)}
+.obs p b{color:var(--ink);font-weight:600}
+.obs ul{margin:0;padding:0;list-style:none;display:grid;gap:10px}
+.obs li{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;font-size:14px;line-height:1.7;color:var(--ink-2)}
+.obs li::before{content:"";width:6px;height:6px;margin-top:9px;border-radius:50%;background:var(--chart)}
+.obs li b{color:var(--ink);font-weight:600}
+.obs .wide,.obs>.card:last-child:nth-child(even){grid-column:1/-1}
+.sec-t{font-size:15px;font-weight:600}
+.sigs{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px;margin-top:12px}
+.sigs .card-bd{display:flex;flex-direction:column;gap:12px}
+.sigs .card-bd>.lk{margin-top:auto;align-self:flex-start}
+
+/* ---------- 迷你柱：表格里的近几个月走势 ---------- */
+.mini{display:inline-flex;align-items:flex-end;gap:2px;height:22px;vertical-align:middle}
+.mini i{width:5px;min-height:2px;border-radius:1.5px 1.5px 0 0;background:var(--chart);opacity:.55}
+.mini i:last-child{opacity:1}
+.mini i.no{height:2px!important;background:var(--line-2)}
+
+/* ---------- 系统设置里的说明 ---------- */
+.kvs{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px 18px}
+.kvs div{font-size:12px;color:var(--ink-3)}
+.kvs b{display:block;margin-top:3px;font-size:15px;font-weight:600;color:var(--ink)}
+code{font:500 12px var(--mono);padding:1px 6px;border-radius:5px;background:var(--tn-bg);color:var(--ink-2)}
+
+@media (max-width:900px){
+  .obs{grid-template-columns:minmax(0,1fr)}
+  .ntc,.sigs{grid-template-columns:minmax(0,1fr)}
+  .org-g{grid-template-columns:minmax(0,1fr)}
+}

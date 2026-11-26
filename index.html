@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="zh-CN" data-source="demo" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark light">
+<!-- 页面只加载本站的脚本、样式和字体，不向任何第三方发请求 -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
+<title>人才管理中台</title>
+<meta name="description" content="人才管理中台演示：考勤、绩效、人才盘点、培养、招聘一屏看全。数据是按固定种子生成的示例，不含任何真实信息。">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preload" href="fonts/geist-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<!-- data-source="demo"：数据在浏览器里用假企业微信现算，可以直接放静态托管；由 server.js 提供页面时会改成 "server"，数据来自本机服务。 -->
+<!-- 深色还是浅色要在首次绘制前定好，所以这一个脚本不延后加载 -->
+<script src="js/theme.js"></script>
+<link rel="stylesheet" href="css/theme.css">
+<link rel="stylesheet" href="css/people.css">
+<link rel="stylesheet" href="css/pages.css">
+</head>
+<body>
+<!-- 仪表环的渐变色：颜色跟着主题变量走，见 theme.css 的 .gs1 到 .gs3 -->
+<svg class="defs" aria-hidden="true"><defs><linearGradient id="gArc" x1="0" y1="0" x2="1" y2="1"><stop offset="0" class="gs3"/><stop offset=".55" class="gs2"/><stop offset="1" class="gs1"/></linearGradient></defs></svg>
+<div class="app" id="app">
+  <aside class="sidebar" id="sidebar" aria-label="导航">
+    <a class="brand" href="#/cockpit"><span class="logo" data-ic="logo" data-s="20" data-sw="2.2"></span><span class="brand-t"><b>人才管理中台</b><small>TALENT CONSOLE</small></span></a>
+    <nav class="side" id="side"></nav>
+    <div class="source" id="source"></div>
+  </aside>
+  <div class="scrim" id="scrim" hidden></div>
+  <header class="topbar">
+    <button class="ib menu" id="btnMenu" aria-label="打开导航" data-ic="menu" data-s="20" data-sw="2"></button>
+    <div class="crumb" id="crumb"></div>
+    <div class="topright">
+      <button class="search" id="topSearch" aria-keyshortcuts="Control+K"><span data-ic="search" data-s="16" data-sw="2.2"></span><span class="search-t">搜索人员、页面</span><kbd aria-hidden="true">Ctrl K</kbd></button>
+      <button class="ib" id="btnTheme" aria-label="切换深色、浅色" title="切换深色、浅色"><span class="sun" data-ic="sun" data-s="19" data-sw="2"></span><span class="moon" data-ic="moon" data-s="18" data-sw="2"></span></button>
+      <button class="ib" id="topBell" aria-label="今日考勤异常" title="今日考勤异常" data-ic="bell" data-s="19" data-sw="2"><i class="dot" id="bellDot" hidden></i></button>
+      <span class="me"><span class="av">管</span><span class="me-n">管理员</span></span>
+    </div>
+  </header>
+  <main class="main" id="main">
+    <div class="wait" id="wait" hidden></div>
+    <div class="notice" id="notice" hidden></div>
+    <div class="page" id="pagePeople" hidden>
+      <header class="page-head">
+        <div class="ph-t"><p class="eyebrow">PEOPLE</p><h1>人员数据中心</h1><p class="ph-sub">每个人今天、昨天和本月的考勤，点名字看个人档案。</p></div>
+        <div class="head-tools">
+          <div class="seg" id="seg"><button data-p="today" class="on">今日</button><button data-p="yesterday">昨日</button><button data-p="d7">近7天</button><button data-p="month">本月</button></div>
+          <div class="range"><input type="date" id="dFrom" aria-label="开始日期"><span>至</span><input type="date" id="dTo" aria-label="结束日期"></div>
+          <span class="scope"><select class="sel" id="scopeDept" aria-label="部门范围"><option value="">全部部门</option></select>
+          <select class="sel" id="scopePost" aria-label="岗位范围"><option value="">全部岗位</option></select></span>
+        </div>
+      </header>
+      <div class="kpis" id="kpis"></div>
+      <div class="ai">
+        <div class="ttl"><span data-ic="spark" data-s="18"></span><span id="aiTitle">AI提醒（今日）</span></div>
+        <div class="chips" id="aiChips"></div>
+        <button class="more" id="aiMore">查看AI分析报告<span data-ic="right" data-s="16" data-sw="2.4"></span></button>
+      </div>
+      <!-- 常用筛选一直露在外面；其余条件平时收起，表格能多露出几行 -->
+      <div class="filter closed" id="filter">
+        <div class="fhead"><button class="hd" id="filterHd" aria-controls="fbody" aria-expanded="false"><span data-ic="down" data-s="16" data-sw="2.4"></span>筛选条件<b id="filterN" hidden></b></button><div class="quick" id="quick"></div></div>
+        <div class="fbody" id="fbody">
+          <div class="frow">
+            <span class="fi"><label for="fDept">部门</label><select class="sel" id="fDept" data-f="dept"></select></span>
+            <span class="fi"><label for="fPost">岗位</label><select class="sel" id="fPost" data-f="post"></select></span>
+            <span class="fi"><label for="fType">用工类型</label><select class="sel" id="fType" data-f="type"></select></span>
+            <span class="fi"><label for="fRule">考勤规则</label><select class="sel" id="fRule" data-f="rule"><option value="">全部</option><option value="fixed">固定班</option><option value="shift">排班</option><option value="free">自由上下班</option><option value="none">无打卡规则</option></select></span>
+            <span class="fi"><label for="fAtt">考勤状态</label><select class="sel" id="fAtt" data-f="att"></select></span>
+            <span class="fi"><label for="fLate">本月迟到</label><select class="sel" id="fLate" data-f="mlate"><option value="">全部</option><option value="1">1 次及以上</option><option value="3">3 次及以上</option><option value="5">5 次及以上</option></select></span>
+            <span class="fi"><label for="fOt">本月加班</label><select class="sel" id="fOt" data-f="mot"><option value="">全部</option><option value="0">有加班</option><option value="10">满 10 小时</option><option value="36">满 36 小时</option></select></span>
+          </div>
+          <div class="frow">
+            <span class="fi"><label for="fJoinFrom">入职时间</label><div class="drange"><input type="text" id="fJoinFrom" data-f="jf" placeholder="开始日期"><span>→</span><input type="text" id="fJoinTo" data-f="jt" placeholder="结束日期" aria-label="入职时间：结束日期"></div></span>
+            <span class="fi"><label for="fTenure">工龄</label><select class="sel" id="fTenure" data-f="tenure"><option value="">全部</option><option value="a">不满1年</option><option value="b">1-3年</option><option value="c">3年以上</option></select></span>
+            <span class="fi"><label for="fMgr">负责人</label><select class="sel" id="fMgr" data-f="mgr"></select></span>
+            <span class="fi grow"><label for="fKw">关键字</label><div class="kw"><span data-ic="search" data-s="15" data-sw="2.2"></span><input id="fKw" data-f="kw" placeholder="搜索姓名，回车看此人的档案"></div></span>
+            <span class="fi btns"><button class="btn pri" id="btnFilter">筛选</button>
+            <button class="btn" id="btnReset">重置</button>
+            <button class="btn" id="btnExport"><span data-ic="download" data-s="15" data-sw="2.2"></span>导出</button>
+            <button class="btn" id="btnCols"><span data-ic="list" data-s="15" data-sw="2.2"></span>自定义列</button></span>
+          </div>
+        </div>
+      </div>
+      <div class="tcard">
+        <div class="tbar">
+          <span class="count" id="count"></span><span id="drill"></span><button class="lk how" id="btnRules">口径说明</button>
+          <div class="tbar-r">
+            <select class="sel" id="sortBy" aria-label="排序"></select>
+            <button class="btn" id="sortDir" title="切换升序、降序"></button>
+            <button class="btn" id="btnMetrics"><span data-ic="list" data-s="15" data-sw="2.2"></span>显示指标<span data-ic="down" data-s="13" data-sw="2.6"></span></button>
+            <button class="btn" id="btnQuery"><span data-ic="refresh" data-s="14" data-sw="2.4"></span>刷新查询</button>
+          </div>
+        </div>
+        <div class="twrap" id="twrap"><table class="grp"><colgroup id="cg"></colgroup><thead><tr id="thead"></tr></thead><tbody id="tbody"></tbody></table></div>
+      </div>
+      <div class="pager"><span class="count" id="count2"></span><div class="pg-r" id="pager"></div></div>
+    </div>
+    <!-- 其余模块：由 js/pages 下各自的脚本画进来 -->
+    <div class="page mod" id="pageMod" hidden></div>
+  </main>
+</div>
+<!-- 四个浮层：个人档案、弹窗、列设置、搜索面板。名字（aria-label）在打开时写上，焦点的进出见 js/ui.js 的 openLayer -->
+<div class="mask" id="mask" hidden></div>
+<div class="drawer" id="drawer" role="dialog" aria-modal="true" tabindex="-1" hidden></div>
+<div class="modal" id="modal" role="dialog" aria-modal="true" tabindex="-1" hidden></div>
+<div class="pop" id="pop" role="dialog" tabindex="-1" hidden></div>
+<div class="cmd" id="cmd" role="dialog" aria-modal="true" tabindex="-1" hidden></div>
+<div class="toast" id="toast" hidden role="status"></div>
+<script type="module" src="js/app.js"></script>
+</body>
+</html>

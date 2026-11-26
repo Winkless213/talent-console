@@ -1,0 +1,9 @@
+{
+  "name": "talent-console",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test",
+    "start": "node server.js --mock"
+  }
+}
