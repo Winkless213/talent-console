@@ -257,4 +257,11 @@ table.mt{width:100%;font-size:13px}
   .pop label{white-space:normal}
   .drange{width:100%}
   .dw-bd{padding-inline:16px}
+  /* 档案里的值在两栏格子里放不下时换行，不用省略号切掉 */
+  .kv b{white-space:normal;overflow-wrap:anywhere}
+  /* 档案里近几个月的表有五列：去掉工时条、收窄留白、表头和月份可以换行，才放得进手机宽度。
+     只管档案抽屉；分析报告里的部门对比有八列，压窄了字会一个一行，留在弹窗里左右滑 */
+  .dw-bd .mt .hb{display:none}
+  .dw-bd .mt th,.dw-bd .mt td{padding:0 6px}
+  .dw-bd .mt th,.dw-bd .mt td:first-child{white-space:normal}
 }
