@@ -18,20 +18,22 @@ const DEPTS = [
 const TEAMS = [[21, 9, ['店铺运营', '推广投放'], 'free'], [22, 8, ['店铺运营', '内容运营'], 'free'], [23, 6, ['直播运营', '主播'], 'free'], [31, 8, ['售前客服'], 'shift'], [32, 6, ['售后客服'], 'shift'],
   [41, 7, ['设计师', '摄影师'], 'fixA'], [4, 2, ['商品企划'], 'fixA'], [51, 6, ['仓管', '打包'], 'fixC'], [52, 4, ['采购', '跟单'], 'fixA'], [61, 4, ['人事', '行政'], 'fixB'], [62, 3, ['会计', '出纳'], 'fixB'],
   [1, 1, ['总经理'], 'none'], [6, 2, ['顾问'], 'none']];
-const SECT = { fixA: [[9 * H, 20 * H]], fixB: [[9 * H, 12 * H], [13 * H, 18 * H]], fixC: [[10 * H, 21 * H]], early: [[7.5 * H, 16.5 * H]], night: [[15 * H, 24 * H]] };
+// 作息按常见的电商公司来：固定班每天 8 小时、中午休 1 小时、周日休息；客服每 7 天休 2 天；自由上下班每天在岗 8.5 到 10 小时、周一休息
+const SECT = { fixA: [[9 * H, 12 * H], [13 * H, 18 * H]], fixB: [[9 * H, 12 * H], [13 * H, 18 * H]], fixC: [[10 * H, 13 * H], [14 * H, 19 * H]], early: [[7.5 * H, 16.5 * H]], night: [[15 * H, 24 * H]] };
 const GRACE = { fixA: 600, fixB: 0, fixC: 600, early: 0, night: 0 };
-const week = [1, 2, 3, 4, 5, 6, 0], cin = s => s.map(([a, b]) => ({ work_sec: a, off_work_sec: b, remind_work_sec: a - 600, remind_off_work_sec: b }));
+const monSat = [1, 2, 3, 4, 5, 6], noMon = [0, 2, 3, 4, 5, 6], cin = s => s.map(([a, b]) => ({ work_sec: a, off_work_sec: b, remind_work_sec: a - 600, remind_off_work_sec: b }));
 const GROUP = {
-  free: { groupid: 3, grouptype: 3, groupname: '演示-自由上下班', span_day_time: 7 * H, sync_holidays: false, spe_workdays: [], spe_offdays: [], checkindate: [{ workdays: week, checkintime: [] }] },
-  fixA: { groupid: 1, grouptype: 1, groupname: '演示-办公室', sync_holidays: false, spe_workdays: [], spe_offdays: [], checkindate: [{ workdays: week, checkintime: cin(SECT.fixA), flex_on_duty_time: 600, noneed_offwork: false }] },
+  free: { groupid: 3, grouptype: 3, groupname: '演示-自由上下班', span_day_time: 7 * H, sync_holidays: false, spe_workdays: [], spe_offdays: [], checkindate: [{ workdays: noMon, checkintime: [] }] },
+  fixA: { groupid: 1, grouptype: 1, groupname: '演示-办公室', sync_holidays: false, spe_workdays: [], spe_offdays: [], checkindate: [{ workdays: monSat, checkintime: cin(SECT.fixA), flex_on_duty_time: 600, noneed_offwork: false }] },
   fixB: { groupid: 4, grouptype: 1, groupname: '演示-职能', sync_holidays: true, spe_workdays: [], spe_offdays: [], checkindate: [{ workdays: [1, 2, 3, 4, 5, 6], checkintime: cin(SECT.fixB), flex_on_duty_time: 0, noneed_offwork: false }] },
-  fixC: { groupid: 5, grouptype: 1, groupname: '演示-仓储', sync_holidays: false, spe_workdays: [], spe_offdays: [], checkindate: [{ workdays: week, checkintime: cin(SECT.fixC), flex_on_duty_time: 600, noneed_offwork: false }] },
+  fixC: { groupid: 5, grouptype: 1, groupname: '演示-仓储', sync_holidays: false, spe_workdays: [], spe_offdays: [], checkindate: [{ workdays: monSat, checkintime: cin(SECT.fixC), flex_on_duty_time: 600, noneed_offwork: false }] },
   shift: { groupid: 2, grouptype: 2, groupname: '演示-客服排班', spe_workdays: [], spe_offdays: [], checkindate: [],
     schedulelist: [{ schedule_id: 11, schedule_name: '早班', time_section: cin(SECT.early), flex_on_duty_time: 0, max_allow_arrive_late: 0 }, { schedule_id: 12, schedule_name: '晚班', time_section: cin(SECT.night), flex_on_duty_time: 0, max_allow_arrive_late: 0 }] }
 };
 // 今天和昨天固定安排几个人出状况，保证每种情形演示里都看得到（按人员序号）
 const FORCE_TODAY = { 38: 'absent', 47: 'late', 54: 'late', 5: 'nopunch', 57: 'leave', 10: 'leave' }, FORCE_YEST = { 39: 'absent', 6: 'nopunch', 41: 'miss', 48: 'early', 53: 'late' };
 const FORCE_X = { absent: 0.001, nopunch: 0.001, miss: 0.03, late: 0.05, early: 0.112, normal: 0.9 };
+const BUSY = 20, STREAK = 25;   // 演示用：BUSY 最近一周每天在岗 14.5 小时以上（长期加班、工时异常）；STREAK 是客服，最近 20 天没排休（连续出勤）
 const LONG = 50, LONG_DAYS = 8;   // 这个人正在休一段长假，审批是 40 天前提交的：单号不在近 31 天的审批列表里，只能从日报里挂的单号找到
 const ROSTER = [{ fieldid: 11, field_name: '员工类型', field_type: 2, value_type: 3, option_list: [{ id: 1, value: '全职' }, { id: 2, value: '实习' }] },
   { fieldid: 12, field_name: '员工状态', field_type: 2, value_type: 3, option_list: [{ id: 1, value: '正式' }, { id: 2, value: '试用' }, { id: 3, value: '待离职' }] },
@@ -57,20 +59,22 @@ export function mockCompany(now = MOCK_NOW) {
     if (date < u.join) return null;
     const t = dayStart(date), dn = Math.round(t / DAY), wd = new Date((t + TZ) * 1000).getUTCDay(), r = n => rnd(u.k, dn, n);
     if (u.rule === 'none') return u.post === '顾问' && u.k % 2 === 0 && r(1) < 0.6 ? { kind: 'norule', n: 2, on: 9.6 * H + Math.floor(r(3) * H), off: 19 * H + Math.floor(r(4) * 2 * H), sect: [], shift: '' } : null;
-    const shift = u.rule === 'shift' ? ((u.k + dn) % 7 === 0 ? null : Math.floor((dn + u.k * 3) / 7) % 2 ? 'night' : 'early') : u.rule === 'fixB' && wd === 0 ? null : u.rule;
+    const busy = u.k === BUSY && date >= addDays(today, -7), streak = u.k === STREAK && date > addDays(today, -21);
+    const restDay = u.rule === 'shift' ? (u.k + dn) % 7 < 2 && !streak : u.rule === 'free' ? wd === 1 && !busy : wd === 0;
+    const shift = restDay ? null : u.rule === 'shift' ? (Math.floor((dn + u.k * 3) / 7) % 2 ? 'night' : 'early') : u.rule;
     if (shift === null) return { kind: 'rest', n: 0, sect: [], shift: '' };
     const sect = SECT[shift] || [], free = u.rule === 'free', planOn = free ? null : sect[0][0], planOff = free ? null : sect[sect.length - 1][1];
     const base = { sect, shift, planOn, planOff, n: 0, on: null, off: null };
     const cadence = 6 + u.k % 4, force = (date === today ? FORCE_TODAY : date === yest ? FORCE_YEST : {})[u.k];
     if (u.k === LONG && date >= longFrom && date < addDays(longFrom, LONG_DAYS)) return { ...base, kind: 'leave', leave: '病假', long: true };
-    if (force === 'leave' || (!force && u.k % 9 !== 4 && u.rule !== 'shift' && (dn + u.k * 2) % cadence === 0)) return { ...base, kind: 'leave', leave: u.k % 2 ? '事假' : '调休' };
-    const x = force ? FORCE_X[force] : r(2), prone = u.k % 8 === 3;
+    if (force === 'leave' || (!force && !busy && u.k % 9 !== 4 && u.rule !== 'shift' && (dn + u.k * 2) % cadence === 0)) return { ...base, kind: 'leave', leave: u.k % 2 ? '事假' : '调休' };
+    const x = force ? FORCE_X[force] : busy || streak ? Math.max(0.2, r(2)) : r(2), prone = u.k % 8 === 3;
     if (!free && x < 0.012) return { ...base, kind: 'absent' };
     if (free && x < 0.02) return { ...base, kind: 'nopunch' };
     const on = free ? Math.floor(9.5 * H + r(3) * 1.2 * H) : planOn - Math.floor(r(3) * 20 * M);
-    const stay = r(4) < 0.55 ? 2 + r(5) * 18 : r(4) < 0.85 ? 30 + r(5) * 60 : 90 + r(5) * 110;
-    const busy = u.k === 20 && date >= addDays(today, -7) ? 3.5 * H : 0;   // 这个人最近一周明显更忙，用来演示"工时异常"
-    const off = free ? Math.floor(22.5 * H + r(4) * 3 * H + (u.k % 5 === 1 ? 1.5 * H : 0) + busy) : planOff + Math.floor((stay + (u.k % 7 === 2 ? 120 : 0)) * M);
+    const stay = r(4) < 0.6 ? 2 + r(5) * 18 : r(4) < 0.9 ? 30 + r(5) * 40 : 70 + r(5) * 50;
+    // 自由上下班在岗 8.5 到 10 小时，开了加班的那个人常多待 1.5 小时；BUSY 最近一周每天 14.5 到 15.5 小时
+    const off = free ? on + Math.floor(busy ? 14.5 * H + r(4) * H : 8.5 * H + r(4) * 1.5 * H + (OTW.has(u.k) ? 1.5 * H : 0)) : planOff + Math.floor((stay + (u.k % 7 === 2 ? 60 : 0)) * M);
     if (x < 0.04) return { ...base, kind: 'miss', n: 1, on };
     if (!free && x < (prone ? 0.36 : 0.1)) return { ...base, kind: 'late', n: 2, on: planOn + GRACE[shift] + 60 + Math.floor(r(6) * 44 * M), off };
     if (!free && x < (prone ? 0.38 : 0.115)) return { ...base, kind: 'early', n: 2, on, off: planOff - 10 * M - Math.floor(r(6) * 30 * M) };

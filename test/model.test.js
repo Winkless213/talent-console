@@ -492,7 +492,8 @@ test('整链：换一个时刻看。早上 8 点多数人还没到上班时间�
   assert.ok(k.before > 30, '没到上班时间的人数 ' + k.before);
   assert.equal(k.due, k.present + k.absentN + k.before);
   assert.ok(k.absentN <= 2, '8 点就被算成未签到的人数 ' + k.absentN);
-  assert.ok(k.present > 5, '早班已经到了');
+  const earlyIn = c2.users.filter(u => { const s = c2.scenario(u, c2.today); return s?.shift === 'early' && s.on != null && dayStart(c2.today) + s.on <= early; }).length;
+  assert.ok(earlyIn >= 3 && k.present >= earlyIn, `早班已经到了：早班到岗 ${earlyIn} 人，在岗 ${k.present} 人`);
   assert.ok(k.rate > 70, '8 点的出勤率不该因为多数人没到点而很低：' + k.rate);
 });
 test('取数：打卡记录只保留时间、类型、异常、标准时间', async () => {
